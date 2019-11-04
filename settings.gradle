@@ -1,2 +1,2 @@
-include ':app'
-rootProject.name='SocialDog'
+include ':app', ':app'
+rootProject.name='TP1note8INF865'
