@@ -26,7 +26,6 @@ import java.util.ArrayList;
 
 public class TouchExample extends View {
     private static final String TAG = "TouchExample";
-    private static final int MAX_POINTERS = 5;
     private float mScale = 1f;
     private GestureDetector mGestureDetector;
     private ScaleGestureDetector mScaleGestureDetector;;
@@ -64,7 +63,8 @@ public class TouchExample extends View {
         bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
         bmRef = bmD.getBitmap();
 
-        for(int i = 0; i < 1000; i++) bmDrawList.add(bmD); //Fake Array
+//        for(int i = 0; i < 1000; i++) bmDrawList.add(bmD); //Fake Array
+        imagesGetter.getBitmaps("/storage/emulated/0/DCIM/Camera");
         for(int i = 0; i < bmDrawList.size(); i++) bmList.add(bmD.getBitmap());
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
