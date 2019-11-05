@@ -39,11 +39,7 @@ public class TouchExample extends View {
         mGestureDetector = new GestureDetector(context, new ZoomGesture());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
 
-        listBmp.add(getBitmap(R.drawable.dog1));
-        listBmp.add(getBitmap(R.drawable.dog2));
-        listBmp.add(getBitmap(R.drawable.dog3));
-        listBmp.add(getBitmap(R.drawable.stonks));
-        listBmp.add(getBitmap(R.drawable.sequence));
+        listBmp = imagesGetter.getBitmaps("/storage/emulated/0/DCIM/Camera");
 
     }
 
