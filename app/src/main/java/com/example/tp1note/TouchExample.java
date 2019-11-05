@@ -30,7 +30,7 @@ public class TouchExample extends View {
     private ScaleGestureDetector mScaleGestureDetector;;
 
     BitmapDrawable bmD;
-    Bitmap bm1;
+    Bitmap bmRef;
 
     int maxHeight = 600; //image height
     int maxLength = 1080; //Display width
@@ -55,7 +55,7 @@ public class TouchExample extends View {
 
 
         bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
-        bm1 = bmD.getBitmap();
+        bmRef = bmD.getBitmap();
 
         for(int i = 0; i < 50; i++) bmList.add(bmD.getBitmap());
         invalidate();
@@ -68,24 +68,38 @@ public class TouchExample extends View {
         int top;
         int left;
         int displayWidth = 1080;
-        int nImageLine = displayWidth/bmList.get(0).getWidth();
-        int tmpTop = bmList.get(0).getHeight();
-        int tmpLeft = bmList.get(0).getWidth();
+        int nImageLine = displayWidth/bmRef.getWidth();
+        int tmpTop = bmRef.getHeight();
+        int tmpLeft = bmRef.getWidth();
+
+        //Scroll limits
         if (tmpTop * (bmList.size()/nImageLine) > displayHeight)
         {
             if(scrollOffset > 0)
                 scrollOffset = 0;
             if(scrollOffset < -(-displayHeight + tmpTop * (bmList.size()/nImageLine) - (displayHeight/tmpTop)))
                 scrollOffset = -(-displayHeight + tmpTop * (bmList.size()/nImageLine) - (displayHeight/tmpTop));
-        } else scrollOffset = 0;
+        } else scrollOffset = 0; //if nothing to scroll, then don't
+
+        int minLine = -scrollOffset/tmpTop - 1;
+        int maxLine = minLine + displayHeight/tmpTop + 2;
 
         for (int i = 0; i < bmList.size(); i++)
         {
+
             top = tmpTop * (i/nImageLine);
             left = tmpLeft * (i%nImageLine);
 
             canvas.drawBitmap(bmList.get(i), left, top + scrollOffset, mPaint);
         }
+/*
+        for (int i = (minLine-1) * nImageLine; i < maxLine * nImageLine + 1; i++)
+        {
+            top = tmpTop * (i/nImageLine);
+            left = tmpLeft * (i%nImageLine);
+
+            canvas.drawBitmap(bmList.get(i), left, top + scrollOffset, mPaint);
+        }*/
     }
 
 
@@ -126,6 +140,7 @@ public class TouchExample extends View {
             {
                 process_image(bmList.get(i), mScale, i);
             }
+            process_image(bmRef,mScale,-1);
 
             invalidate();
             return true;
@@ -143,7 +158,9 @@ public class TouchExample extends View {
                 bm = Bitmap.createScaledBitmap(image, (maxLength/(maxIm-i)), (maxHeight/(maxIm-i)), false);
             }
         }
-        bmList.set(index, bm);
+        if(index < 0) bmRef = bm;
+        else bmList.set(index, bm);
+
     }
 }
 
