@@ -34,14 +34,12 @@ public class TouchExample extends View {
 
 
     private Paint mPaint;
-    private float mFontSize;
 
     public TouchExample(Context context) {
         super(context);
 
         mPaint = new Paint();
         mPaint.setColor(Color.BLACK);
-        mPaint.setTextSize(mFontSize);
 
         mGestureDetector = new GestureDetector(context, new ZoomGesture());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
@@ -103,40 +101,15 @@ public class TouchExample extends View {
     //Redimensionne l'image en fonction du coefficient de zoom
     void process_image(Bitmap image, float imageScale) {
 
-        int maxIm = 7; //max Image per line
-        Bitmap bm;
+        int maxIm = 9; //max Image per line
+        Bitmap bm = Bitmap.createScaledBitmap(image, maxLength, maxHeight, false);
 
-        if(0 < imageScale && imageScale < 1./maxIm)
+        for (int i = 0; i< maxIm; i++)
         {
-             bm = Bitmap.createScaledBitmap(image, (int) (maxLength/7), (int) (maxHeight/7), false);
-        }
-        else if(1./maxIm < imageScale && imageScale < 2./maxIm)
-        {
-            bm = Bitmap.createScaledBitmap(image, (int) (maxLength/6), (int) (maxHeight/6), false);
-        }
-        else if(2./maxIm < imageScale && imageScale < 3./maxIm)
-        {
-            bm = Bitmap.createScaledBitmap(image, (int) (maxLength/5), (int) (maxHeight/5), false);
-        }
-        else if(3./maxIm < imageScale && imageScale < 4./maxIm)
-        {
-            bm = Bitmap.createScaledBitmap(image, (int) (maxLength/4), (int) (maxHeight/4), false);
-        }
-        else if(4./maxIm < imageScale && imageScale < 5./maxIm)
-        {
-            bm = Bitmap.createScaledBitmap(image, (int) (maxLength/3), (int) (maxHeight/3), false);
-        }
-        else if(5./maxIm < imageScale && imageScale < 6./maxIm)
-        {
-            bm = Bitmap.createScaledBitmap(image, (int) (maxLength/2), (int) (maxHeight/2), false);
-        }
-        else if(7./maxIm < imageScale && imageScale < 7./maxIm)
-        {
-            bm = Bitmap.createScaledBitmap(image, (int) (maxLength * 7./maxIm), (int) (maxHeight * 7./maxIm), false);
-        }
-        else
-        {
-            bm = Bitmap.createScaledBitmap(image, maxLength, maxHeight, false);
+            if(i/(float)maxIm < imageScale && imageScale < (i+1)/(float)maxIm)
+            {
+                bm = Bitmap.createScaledBitmap(image, (maxLength/(maxIm-i)), (maxHeight/(maxIm-i)), false);
+            }
         }
 
         bm1 = bm;
