@@ -18,6 +18,8 @@ import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
+
 
 public class TouchExample extends View {
     private static final String TAG = "TouchExample";
@@ -31,6 +33,9 @@ public class TouchExample extends View {
 
     int maxHeight = 600; //image height
     int maxLength = 1080; //Display width
+
+    int maxIm = 7; //max Image per line
+    ArrayList<Bitmap> bmList = new ArrayList<Bitmap>();
 
 
     private Paint mPaint;
@@ -47,10 +52,11 @@ public class TouchExample extends View {
         bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
         bm1 = bmD.getBitmap();
 
-
+        for(int i = 0; i < 10; i++) bmList.add(bmD.getBitmap());
     }
 
     //Affiche dynamiquement les images en quadrillage
+    //On suppose aue toutes les images on la meme resolution
     @Override
     public void onDraw(Canvas canvas) {
         int totalImage = 500;
@@ -58,13 +64,15 @@ public class TouchExample extends View {
         int left;
         int displayWidth = 1080;
         int nImageLine = displayWidth/bm1.getWidth();
+        int tmpTop = bmList.get(0).getHeight();
+        int tmpLeft = bmList.get(0).getWidth();
 
-        for (int i = 0; i < totalImage; i++)
+        for (int i = 0; i < bmList.size(); i++)
         {
-            top = bm1.getHeight() * (i/nImageLine);
-            left = bm1.getWidth() * (i%nImageLine);
+            top = tmpTop * (i/nImageLine);
+            left = tmpLeft * (i%nImageLine);
 
-            canvas.drawBitmap(bm1, left, top, mPaint);
+            canvas.drawBitmap(bmList.get(i), left, top, mPaint);
         }
     }
 
@@ -92,16 +100,18 @@ public class TouchExample extends View {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             mScale *= detector.getScaleFactor();
-            process_image(bm1, mScale);
+            for(int i = 0; i<bmList.size(); i++)
+            {
+                process_image(bmList.get(i), mScale, i);
+            }
+
             invalidate();
             return true;
         }
     }
 
     //Redimensionne l'image en fonction du coefficient de zoom
-    void process_image(Bitmap image, float imageScale) {
-
-        int maxIm = 9; //max Image per line
+    void process_image(Bitmap image, float imageScale, int index) {
         Bitmap bm = Bitmap.createScaledBitmap(image, maxLength, maxHeight, false);
 
         for (int i = 0; i< maxIm; i++)
@@ -111,7 +121,7 @@ public class TouchExample extends View {
                 bm = Bitmap.createScaledBitmap(image, (maxLength/(maxIm-i)), (maxHeight/(maxIm-i)), false);
             }
         }
-
-        bm1 = bm;
+        bmList.set(index, bm);
     }
 }
+
