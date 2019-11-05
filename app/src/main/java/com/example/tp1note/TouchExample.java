@@ -52,14 +52,13 @@ public class TouchExample extends View {
         bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
         bm1 = bmD.getBitmap();
 
-        for(int i = 0; i < 10; i++) bmList.add(bmD.getBitmap());
+        for(int i = 0; i < 30; i++) bmList.add(bmD.getBitmap());
     }
 
     //Affiche dynamiquement les images en quadrillage
     //On suppose aue toutes les images on la meme resolution
     @Override
     public void onDraw(Canvas canvas) {
-        int totalImage = 500;
         int top;
         int left;
         int displayWidth = 1080;
@@ -100,6 +99,9 @@ public class TouchExample extends View {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             mScale *= detector.getScaleFactor();
+            Log.e(TAG, Float.toString(mScale));
+            mScale = (mScale > 1) ? 1 : mScale;
+            mScale = (mScale < 1./9) ? (float) 1/9 : mScale;
             for(int i = 0; i<bmList.size(); i++)
             {
                 process_image(bmList.get(i), mScale, i);
