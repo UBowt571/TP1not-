@@ -1,6 +1,7 @@
 package com.example.tp1note;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -38,7 +40,7 @@ public class TouchExample extends View {
     int min;
 
     int maxHeight = 600; //image height
-    int maxLength = 1080; //Display width
+    int displayWidth = 50; //Display width
     int displayHeight = 1700;
 
     int maxIm = 7; //max Image per line
@@ -64,6 +66,14 @@ public class TouchExample extends View {
 
         for(int i = 0; i < 1000; i++) bmDrawList.add(bmD); //Fake Array
         for(int i = 0; i < bmDrawList.size(); i++) bmList.add(bmD.getBitmap());
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((Activity) getContext()).getWindowManager()
+                .getDefaultDisplay()
+                .getMetrics(displayMetrics);
+        displayWidth = displayMetrics.widthPixels;
+
+        init();
     }
 
     //Affiche dynamiquement les images en quadrillage
@@ -143,7 +153,7 @@ public class TouchExample extends View {
             mScale *= detector.getScaleFactor();
             mScale = (mScale > 1) ? 1 : mScale;
             mScale = (mScale < 1./9) ? (float) 1/9 : mScale;
-            process_image(bmRef,mScale,-1);
+            process_image(bmRef,mScale);
             for (int i = min; i < max; i++)
             {
                 bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), bmRef.getWidth(), bmRef.getHeight(), false));
@@ -154,18 +164,30 @@ public class TouchExample extends View {
     }
 
     //Redimensionne l'image en fonction du coefficient de zoom
-    void process_image(Bitmap image, float imageScale, int index) {
-        Bitmap bm = Bitmap.createScaledBitmap(image, maxLength, maxHeight, false);
+    void process_image(Bitmap image, float imageScale) {
+        Bitmap bm = Bitmap.createScaledBitmap(image, displayWidth, maxHeight, false);
 
         for (int i = 0; i< maxIm; i++)
         {
             if(i/(float)maxIm < imageScale && imageScale < (i+1)/(float)maxIm)
             {
-                bm = Bitmap.createScaledBitmap(image, (maxLength/(maxIm-i)), (maxHeight/(maxIm-i)), false);
+                bm = Bitmap.createScaledBitmap(image, (displayWidth/(maxIm-i)), (maxHeight/(maxIm-i)), false);
             }
         }
-        if(index < 0) bmRef = bm;
-        else bmList.set(index, bm);
+        bmRef = bm;
     }
+
+    void init()
+    {
+        mScale = 1;
+        process_image(bmRef,mScale); //TO CHECK
+        for (int i = min; i < max; i++)
+        {
+            bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), bmRef.getWidth(), bmRef.getHeight(), false));
+        }
+        invalidate();
+        return;
+    }
+
 }
 
