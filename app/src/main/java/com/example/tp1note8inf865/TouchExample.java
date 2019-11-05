@@ -70,16 +70,17 @@ public class TouchExample extends View {
     //Affiche dynamiquement les images en quadrillage
     @Override
     public void onDraw(Canvas canvas) {
-        int top;
-        int left;
+        int top = 0;
+        int left = 0;
         int displayWidth = 1080;
+        int nImageLine = displayWidth/listBmp.get(0).getWidth()+1;
 
-        int x=1,y = 1;
         for (int i = 0; i < listBmp.size(); i++)
         {
-
-            canvas.drawBitmap(listBmp.get(i),  null, new Rect(x,y,x+100,y+100), mPaint);
-            x+=100;
+            top = listBmp.get(i).getHeight() * (i/nImageLine);
+            left = listBmp.get(i).getHeight() * (i%nImageLine);
+            canvas.drawBitmap(listBmp.get(i), left, top, mPaint);
+            nImageLine = displayWidth/listBmp.get(i).getWidth()+1;
         }
     }
 
