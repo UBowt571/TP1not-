@@ -42,10 +42,10 @@ public class TouchExample extends View {
     int displayHeight = 1700;
 
     int maxIm = 7; //max Image per line
-    ArrayList<Bitmap> bmList = new ArrayList<Bitmap>();
+    ArrayList<BitmapDrawable> bmDrawList = new ArrayList<>();
+    ArrayList<Bitmap> bmList = new ArrayList<>();
 
     int scrollOffset = 0;
-
 
     private Paint mPaint;
 
@@ -62,8 +62,8 @@ public class TouchExample extends View {
         bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
         bmRef = bmD.getBitmap();
 
-        for(int i = 0; i < 300; i++) bmList.add(bmD.getBitmap());
-        invalidate();
+        for(int i = 0; i < 1000; i++) bmDrawList.add(bmD); //Fake Array
+        for(int i = 0; i < bmDrawList.size(); i++) bmList.add(bmD.getBitmap());
     }
 
     //Affiche dynamiquement les images en quadrillage
@@ -76,7 +76,6 @@ public class TouchExample extends View {
         int nImageLine = displayWidth/bmRef.getWidth();
         int tmpTop = bmRef.getHeight();
         int tmpLeft = bmRef.getWidth();
-
 
         //Scroll limits
         if (tmpTop * (bmList.size()/nImageLine) > displayHeight)
@@ -97,29 +96,14 @@ public class TouchExample extends View {
 
         max = (maxLine * nImageLine) + (bmList.size() % nImageLine);
         min = (minLine-1) * nImageLine;
-        if (max > bmList.size())
-        {
-            max = bmList.size();
-        }
-        if(min < 0)
-        {
-            min = 0;
-        }
-
-/*
-        for (int i = 0; i < bmList.size(); i++)
-        {
-
-            top = tmpTop * (i/nImageLine);
-            left = tmpLeft * (i%nImageLine);
-
-            canvas.drawBitmap(bmList.get(i), left, top + scrollOffset, mPaint);
-        }*/
+        if (max > bmList.size()) max = bmList.size();
+        if(min < 0) min = 0;
 
         for (int i = min; i < max; i++)
         {
             top = tmpTop * (i/nImageLine);
             left = tmpLeft * (i%nImageLine);
+            bmList.set(i, bmDrawList.get(i).getBitmap());
             bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), bmRef.getWidth(), bmRef.getHeight(), false));
             canvas.drawBitmap(bmList.get(i), left, top + scrollOffset, mPaint);
         }
@@ -164,8 +148,6 @@ public class TouchExample extends View {
             {
                 bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), bmRef.getWidth(), bmRef.getHeight(), false));
             }
-
-
             invalidate();
             return true;
         }
@@ -184,7 +166,6 @@ public class TouchExample extends View {
         }
         if(index < 0) bmRef = bm;
         else bmList.set(index, bm);
-
     }
 }
 
