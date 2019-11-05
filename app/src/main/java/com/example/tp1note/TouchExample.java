@@ -57,7 +57,7 @@ public class TouchExample extends View {
         bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
         bmRef = bmD.getBitmap();
 
-        for(int i = 0; i < 50; i++) bmList.add(bmD.getBitmap());
+        for(int i = 0; i < 300; i++) bmList.add(bmD.getBitmap());
         invalidate();
     }
 
@@ -71,6 +71,10 @@ public class TouchExample extends View {
         int nImageLine = displayWidth/bmRef.getWidth();
         int tmpTop = bmRef.getHeight();
         int tmpLeft = bmRef.getWidth();
+        int minLine;
+        int maxLine;
+        int max;
+        int min;
 
         //Scroll limits
         if (tmpTop * (bmList.size()/nImageLine) > displayHeight)
@@ -79,11 +83,28 @@ public class TouchExample extends View {
                 scrollOffset = 0;
             if(scrollOffset < -(-displayHeight + tmpTop * (bmList.size()/nImageLine) - (displayHeight/tmpTop)))
                 scrollOffset = -(-displayHeight + tmpTop * (bmList.size()/nImageLine) - (displayHeight/tmpTop));
-        } else scrollOffset = 0; //if nothing to scroll, then don't
+            minLine = -scrollOffset/tmpTop - 1;
+            maxLine = minLine + displayHeight/tmpTop + 4;
+        }
+        else
+        {
+            minLine = 0;
+            maxLine = bmList.size()/nImageLine + bmList.size()%nImageLine;
+            scrollOffset = 0; //if nothing to scroll, then don't
+        }
 
-        int minLine = -scrollOffset/tmpTop - 1;
-        int maxLine = minLine + displayHeight/tmpTop + 2;
+        max = (maxLine * nImageLine) + (bmList.size() % nImageLine);
+        min = (minLine-1) * nImageLine;
+        if (max > bmList.size())
+        {
+            max = bmList.size();
+        }
+        if(min < 0)
+        {
+            min = 0;
+        }
 
+/*
         for (int i = 0; i < bmList.size(); i++)
         {
 
@@ -91,15 +112,15 @@ public class TouchExample extends View {
             left = tmpLeft * (i%nImageLine);
 
             canvas.drawBitmap(bmList.get(i), left, top + scrollOffset, mPaint);
-        }
-/*
-        for (int i = (minLine-1) * nImageLine; i < maxLine * nImageLine + 1; i++)
+        }*/
+
+        for (int i = min; i < max; i++)
         {
             top = tmpTop * (i/nImageLine);
             left = tmpLeft * (i%nImageLine);
 
             canvas.drawBitmap(bmList.get(i), left, top + scrollOffset, mPaint);
-        }*/
+        }
     }
 
 
