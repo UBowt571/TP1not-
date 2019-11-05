@@ -32,6 +32,11 @@ public class TouchExample extends View {
     BitmapDrawable bmD;
     Bitmap bmRef;
 
+    int minLine;
+    int maxLine;
+    int max;
+    int min;
+
     int maxHeight = 600; //image height
     int maxLength = 1080; //Display width
     int displayHeight = 1700;
@@ -71,10 +76,7 @@ public class TouchExample extends View {
         int nImageLine = displayWidth/bmRef.getWidth();
         int tmpTop = bmRef.getHeight();
         int tmpLeft = bmRef.getWidth();
-        int minLine;
-        int maxLine;
-        int max;
-        int min;
+
 
         //Scroll limits
         if (tmpTop * (bmList.size()/nImageLine) > displayHeight)
@@ -118,7 +120,7 @@ public class TouchExample extends View {
         {
             top = tmpTop * (i/nImageLine);
             left = tmpLeft * (i%nImageLine);
-
+            bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), bmRef.getWidth(), bmRef.getHeight(), false));
             canvas.drawBitmap(bmList.get(i), left, top + scrollOffset, mPaint);
         }
     }
@@ -157,11 +159,12 @@ public class TouchExample extends View {
             mScale *= detector.getScaleFactor();
             mScale = (mScale > 1) ? 1 : mScale;
             mScale = (mScale < 1./9) ? (float) 1/9 : mScale;
-            for(int i = 0; i<bmList.size(); i++)
-            {
-                process_image(bmList.get(i), mScale, i);
-            }
             process_image(bmRef,mScale,-1);
+            for (int i = min; i < max; i++)
+            {
+                bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), bmRef.getWidth(), bmRef.getHeight(), false));
+            }
+
 
             invalidate();
             return true;
