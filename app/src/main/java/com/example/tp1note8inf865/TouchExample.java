@@ -5,25 +5,16 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.widget.ImageView;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 
 
 public class TouchExample extends View {
-    private static final String TAG = "TouchExample";
-    private static final int MAX_POINTERS = 5;
     private float mScale = 1f;
     private GestureDetector mGestureDetector;
     private ScaleGestureDetector mScaleGestureDetector;
@@ -32,8 +23,9 @@ public class TouchExample extends View {
     Bitmap bm1;
     ArrayList<Bitmap> listBmp = new ArrayList<Bitmap>();
 
-    int maxHeight = 600; //image height
-    int maxLength = 1080; //Display width
+    int maxHeight; //image height
+    int maxWidth; //Display width
+    int nbImgLine = 7;
 
 
     private Paint mPaint;
@@ -70,17 +62,18 @@ public class TouchExample extends View {
     //Affiche dynamiquement les images en quadrillage
     @Override
     public void onDraw(Canvas canvas) {
+        maxHeight=getHeight();
+        maxWidth =getWidth();
         int top = 0;
         int left = 0;
-        int displayWidth = 1080;
-        int nImageLine = displayWidth/listBmp.get(0).getWidth()+1;
 
         for (int i = 0; i < listBmp.size(); i++)
         {
-            top = listBmp.get(i).getHeight() * (i/nImageLine);
-            left = listBmp.get(i).getHeight() * (i%nImageLine);
+            top = listBmp.get(i).getHeight() * (i/nbImgLine);
+            left = listBmp.get(i).getHeight() * (i% nbImgLine);
             canvas.drawBitmap(listBmp.get(i), left, top, mPaint);
-            nImageLine = displayWidth/listBmp.get(i).getWidth()+1;
+            nbImgLine = maxWidth/listBmp.get(i).getWidth();
+            if(nbImgLine ==0){nbImgLine=1;}
         }
     }
 
@@ -124,35 +117,35 @@ public class TouchExample extends View {
         {
             if(0 < imageScale && imageScale < 1./maxIm)
             {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxLength/7), (int) (maxHeight/7), false);
+                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /7), (int) (maxHeight/7), false);
             }
             else if(1./maxIm < imageScale && imageScale < 2./maxIm)
             {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxLength/6), (int) (maxHeight/6), false);
+                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /6), (int) (maxHeight/6), false);
             }
             else if(2./maxIm < imageScale && imageScale < 3./maxIm)
             {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxLength/5), (int) (maxHeight/5), false);
+                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /5), (int) (maxHeight/5), false);
             }
             else if(3./maxIm < imageScale && imageScale < 4./maxIm)
             {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxLength/4), (int) (maxHeight/4), false);
+                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /4), (int) (maxHeight/4), false);
             }
             else if(4./maxIm < imageScale && imageScale < 5./maxIm)
             {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxLength/3), (int) (maxHeight/3), false);
+                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /3), (int) (maxHeight/3), false);
             }
             else if(5./maxIm < imageScale && imageScale < 6./maxIm)
             {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxLength/2), (int) (maxHeight/2), false);
+                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /2), (int) (maxHeight/2), false);
             }
-            else if(7./maxIm < imageScale && imageScale < 7./maxIm)
+            else if(6./maxIm < imageScale && imageScale < 7./maxIm)
             {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxLength * 7./maxIm), (int) (maxHeight * 7./maxIm), false);
+                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth * 7./maxIm), (int) (maxHeight * 7./maxIm), false);
             }
             else
             {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), maxLength, maxHeight, false);
+                bm = Bitmap.createScaledBitmap(listBmp.get(i), maxWidth, maxHeight, false);
             }
 
             listBmp.set(i,bm) ;
