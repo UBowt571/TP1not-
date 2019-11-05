@@ -43,7 +43,7 @@ public class TouchExample extends View {
     int displayHeight = 1700;
 
     int maxIm = 7; //max Image per line
-    ArrayList<BitmapDrawable> bmDrawList = new ArrayList<>();
+    ArrayList<BitmapDrawable> bmDrawList;
     ArrayList<Bitmap> bmList = new ArrayList<>();
 
     int scrollOffset = 0;
@@ -54,7 +54,6 @@ public class TouchExample extends View {
         super(context);
 
         mPaint = new Paint();
-        mPaint.setColor(Color.BLACK);
 
         mGestureDetector = new GestureDetector(context, new ZoomGesture());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
@@ -63,8 +62,7 @@ public class TouchExample extends View {
         bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
         bmRef = bmD.getBitmap();
 
-//        for(int i = 0; i < 1000; i++) bmDrawList.add(bmD); //Fake Array
-        imagesGetter.getBitmaps("/storage/emulated/0/DCIM/Camera");
+        bmDrawList = imagesGetter.getBitmaps("/storage/emulated/0/DCIM/Camera");
         for(int i = 0; i < bmDrawList.size(); i++) bmList.add(bmD.getBitmap());
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -82,7 +80,6 @@ public class TouchExample extends View {
     public void onDraw(Canvas canvas) {
         int top;
         int left;
-        int displayWidth = 1080;
         int nImageLine = displayWidth/bmRef.getWidth();
         int tmpTop = bmRef.getHeight();
         int tmpLeft = bmRef.getWidth();
@@ -92,8 +89,8 @@ public class TouchExample extends View {
         {
             if(scrollOffset > 0)
                 scrollOffset = 0;
-            if(scrollOffset < -(-displayHeight + tmpTop * (bmList.size()/nImageLine) - (displayHeight/tmpTop)))
-                scrollOffset = -(-displayHeight + tmpTop * (bmList.size()/nImageLine) - (displayHeight/tmpTop));
+            if(scrollOffset < -(-displayHeight + tmpTop * (bmList.size()/nImageLine + 1) - (displayHeight/tmpTop)))
+                scrollOffset = -(-displayHeight + tmpTop * (bmList.size()/nImageLine + 1) - (displayHeight/tmpTop));
             minLine = -scrollOffset/tmpTop - 1;
             maxLine = minLine + displayHeight/tmpTop + 4;
         }
