@@ -20,11 +20,13 @@ public class TouchExample extends View {
 
     BitmapDrawable bmD;
     Bitmap bm1;
-    ArrayList<Bitmap> listBmp = new ArrayList<Bitmap>();
+    ArrayList<Bitmap> listBmp = new ArrayList<>();
 
-    int maxHeight; //image height
-    int maxWidth; //Display width
-    int nbImgLine = 7;
+    private int maxHeight; //image height
+    private int maxWidth; //Display width
+    private static final int NB_MAX_IMAGES_FOR_ONE_LINE = 7;
+    private static final int SPAN_SLOP = 2;
+    private int nbImgLine = 4;      // default number of images for a line /!\ very important for the app
 
 
     private Paint mPaint;
@@ -37,21 +39,11 @@ public class TouchExample extends View {
         mGestureDetector = new GestureDetector(context, new ZoomGesture());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
 
-        bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
-        bm1 = bmD.getBitmap();
-        listBmp.add(bm1);
-        bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog2);
-        bm1 = bmD.getBitmap();
-        listBmp.add(bm1);
-        bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog3);
-        bm1 = bmD.getBitmap();
-        listBmp.add(bm1);
-        bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.stonks);
-        bm1 = bmD.getBitmap();
-        listBmp.add(bm1);
-        bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.sequence);
-        bm1 = bmD.getBitmap();
-        listBmp.add(bm1);
+        listBmp.add(getBitmap(R.drawable.dog1));
+        listBmp.add(getBitmap(R.drawable.dog2));
+        listBmp.add(getBitmap(R.drawable.dog3));
+        listBmp.add(getBitmap(R.drawable.stonks));
+        listBmp.add(getBitmap(R.drawable.sequence));
 
     }
 
@@ -60,16 +52,16 @@ public class TouchExample extends View {
     public void onDraw(Canvas canvas) {
         maxHeight=getHeight();
         maxWidth =getWidth();
+        int imgsize = (maxWidth/nbImgLine);
         int top = 0;
         int left = 0;
 
         for (int i = 0; i < listBmp.size(); i++)
         {
-            top = listBmp.get(i).getHeight() * (i/nbImgLine);
-            left = listBmp.get(i).getHeight() * (i% nbImgLine);
-            canvas.drawBitmap(listBmp.get(i), left, top, mPaint);
-            nbImgLine = maxWidth/listBmp.get(i).getWidth();
-            if(nbImgLine ==0){nbImgLine=1;}
+            if((left+imgsize)>maxWidth){top+=imgsize;left=0;}
+            Bitmap resized = Bitmap.createScaledBitmap(listBmp.get(i), imgsize, imgsize, false);
+            canvas.drawBitmap(resized,left,top,mPaint);
+            left+=imgsize;
         }
     }
 
@@ -97,8 +89,11 @@ public class TouchExample extends View {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             mScale *= detector.getScaleFactor();
-            process_image(listBmp, mScale);
-            invalidate();
+            if(gestureTolerance(detector)) {
+                process_image(listBmp, mScale);
+                invalidate();
+                return true;
+            }
             return true;
         }
     }
@@ -106,47 +101,24 @@ public class TouchExample extends View {
     //Redimensionne l'image en fonction du coefficient de zoom
     void process_image(ArrayList<Bitmap> listBmp, float imageScale) {
 
-        int maxIm = 7; //max Image per line
-        Bitmap bm;
-
-        for (int i = 0; i < listBmp.size(); i++)
-        {
-            if(0 < imageScale && imageScale < 1./maxIm)
-            {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /7), (int) (maxHeight/7), false);
+        int imgsize = (maxWidth/nbImgLine);
+        if(nbImgLine==1){nbImgLine=2;}
+        if( (imgsize*imageScale) > (maxWidth/(nbImgLine-1)) ){
+            if(nbImgLine>0){
+                nbImgLine-=1;
             }
-            else if(1./maxIm < imageScale && imageScale < 2./maxIm)
-            {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /6), (int) (maxHeight/6), false);
-            }
-            else if(2./maxIm < imageScale && imageScale < 3./maxIm)
-            {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /5), (int) (maxHeight/5), false);
-            }
-            else if(3./maxIm < imageScale && imageScale < 4./maxIm)
-            {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /4), (int) (maxHeight/4), false);
-            }
-            else if(4./maxIm < imageScale && imageScale < 5./maxIm)
-            {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /3), (int) (maxHeight/3), false);
-            }
-            else if(5./maxIm < imageScale && imageScale < 6./maxIm)
-            {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth /2), (int) (maxHeight/2), false);
-            }
-            else if(6./maxIm < imageScale && imageScale < 7./maxIm)
-            {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), (int) (maxWidth * 7./maxIm), (int) (maxHeight * 7./maxIm), false);
-            }
-            else
-            {
-                bm = Bitmap.createScaledBitmap(listBmp.get(i), maxWidth, maxHeight, false);
-            }
-
-            listBmp.set(i,bm) ;
+        }else if( (imgsize*imageScale) < (maxWidth/(nbImgLine+1)) ){
+            if(nbImgLine<NB_MAX_IMAGES_FOR_ONE_LINE){nbImgLine+=1;}
         }
+    }
 
-        }
+    Bitmap getBitmap(int resID){
+        return ((BitmapDrawable) getContext().getResources().getDrawable(resID)).getBitmap();
+    }
+
+    private boolean gestureTolerance(ScaleGestureDetector detector) {
+        final float spanDelta = Math.abs(detector.getCurrentSpan() - detector.getPreviousSpan());
+        return spanDelta > SPAN_SLOP;
+    }
 
 }
