@@ -34,6 +34,7 @@ public class TouchExample extends View {
 
     int maxHeight = 600; //image height
     int maxLength = 1080; //Display width
+    int displayHeight = 1700;
 
     int maxIm = 7; //max Image per line
     ArrayList<Bitmap> bmList = new ArrayList<Bitmap>();
@@ -56,7 +57,7 @@ public class TouchExample extends View {
         bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
         bm1 = bmD.getBitmap();
 
-        for(int i = 0; i < 30; i++) bmList.add(bmD.getBitmap());
+        for(int i = 0; i < 50; i++) bmList.add(bmD.getBitmap());
         invalidate();
     }
 
@@ -67,9 +68,16 @@ public class TouchExample extends View {
         int top;
         int left;
         int displayWidth = 1080;
-        int nImageLine = displayWidth/bm1.getWidth();
+        int nImageLine = displayWidth/bmList.get(0).getWidth();
         int tmpTop = bmList.get(0).getHeight();
         int tmpLeft = bmList.get(0).getWidth();
+        if (tmpTop * (bmList.size()/nImageLine) > displayHeight)
+        {
+            if(scrollOffset > 0)
+                scrollOffset = 0;
+            if(scrollOffset < -(-displayHeight + tmpTop * (bmList.size()/nImageLine) - (displayHeight/tmpTop)))
+                scrollOffset = -(-displayHeight + tmpTop * (bmList.size()/nImageLine) - (displayHeight/tmpTop));
+        } else scrollOffset = 0;
 
         for (int i = 0; i < bmList.size(); i++)
         {
@@ -101,10 +109,7 @@ public class TouchExample extends View {
         }
 
         @Override
-        public boolean onScroll(MotionEvent event1, MotionEvent event2, float distanceX,
-                                float distanceY) {
-            //Log.d(DEBUG_TAG, "onScroll: " + event1.toString() + event2.toString());
-            Log.e(TAG, Float.toString(distanceX));
+        public boolean onScroll(MotionEvent event1, MotionEvent event2, float distanceX,float distanceY) {
             scrollOffset -= distanceY;
             invalidate();
             return true;
