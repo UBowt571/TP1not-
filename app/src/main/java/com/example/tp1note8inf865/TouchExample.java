@@ -3,7 +3,6 @@ package com.example.tp1note8inf865;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.GestureDetector;
@@ -29,14 +28,11 @@ public class TouchExample extends View {
 
 
     private Paint mPaint;
-    private float mFontSize;
 
     public TouchExample(Context context) {
         super(context);
 
         mPaint = new Paint();
-        mPaint.setColor(Color.BLACK);
-        mPaint.setTextSize(mFontSize);
 
         mGestureDetector = new GestureDetector(context, new ZoomGesture());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
