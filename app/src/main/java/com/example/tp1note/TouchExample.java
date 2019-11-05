@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GestureDetectorCompat;
 
 import java.util.ArrayList;
 
@@ -26,7 +27,7 @@ public class TouchExample extends View {
     private static final int MAX_POINTERS = 5;
     private float mScale = 1f;
     private GestureDetector mGestureDetector;
-    private ScaleGestureDetector mScaleGestureDetector;
+    private ScaleGestureDetector mScaleGestureDetector;;
 
     BitmapDrawable bmD;
     Bitmap bm1;
@@ -36,6 +37,8 @@ public class TouchExample extends View {
 
     int maxIm = 7; //max Image per line
     ArrayList<Bitmap> bmList = new ArrayList<Bitmap>();
+
+    int scrollOffset = 0;
 
 
     private Paint mPaint;
@@ -49,10 +52,12 @@ public class TouchExample extends View {
         mGestureDetector = new GestureDetector(context, new ZoomGesture());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
 
+
         bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
         bm1 = bmD.getBitmap();
 
         for(int i = 0; i < 30; i++) bmList.add(bmD.getBitmap());
+        invalidate();
     }
 
     //Affiche dynamiquement les images en quadrillage
@@ -71,7 +76,7 @@ public class TouchExample extends View {
             top = tmpTop * (i/nImageLine);
             left = tmpLeft * (i%nImageLine);
 
-            canvas.drawBitmap(bmList.get(i), left, top, mPaint);
+            canvas.drawBitmap(bmList.get(i), left, top + scrollOffset, mPaint);
         }
     }
 
@@ -83,6 +88,7 @@ public class TouchExample extends View {
         return true;
     }
 
+
     public class ZoomGesture extends GestureDetector.SimpleOnGestureListener {
         private boolean normal = true;
 
@@ -93,13 +99,22 @@ public class TouchExample extends View {
             invalidate();
             return true;
         }
+
+        @Override
+        public boolean onScroll(MotionEvent event1, MotionEvent event2, float distanceX,
+                                float distanceY) {
+            //Log.d(DEBUG_TAG, "onScroll: " + event1.toString() + event2.toString());
+            Log.e(TAG, Float.toString(distanceX));
+            scrollOffset -= distanceY;
+            invalidate();
+            return true;
+        }
     }
 
     public class ScaleGesture extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             mScale *= detector.getScaleFactor();
-            Log.e(TAG, Float.toString(mScale));
             mScale = (mScale > 1) ? 1 : mScale;
             mScale = (mScale < 1./9) ? (float) 1/9 : mScale;
             for(int i = 0; i<bmList.size(); i++)
