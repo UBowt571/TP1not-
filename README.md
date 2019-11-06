@@ -7,7 +7,7 @@ Ce projet permet les fonctionnalités suivantes :
   3. **Permettre de zoomer avec le geste "pinch"**
   4. **Permettre de scroll verticalement avec le geste "scroll"**
 
-### La branche avec le code à jour est la branche **gesture**
+### La branche avec le code à jour est la branche [**gesture**](https://github.com/UBowt571/TP1note8INF865/tree/gesture)
   
 **Le zoom avec le geste "pinch"** :  
 ![](images/zoomInOut.gif)  
