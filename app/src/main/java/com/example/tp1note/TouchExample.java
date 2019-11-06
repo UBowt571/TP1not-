@@ -22,9 +22,12 @@ public class TouchExample extends View {
     private GestureDetector mGestureDetector;
     private ScaleGestureDetector mScaleGestureDetector;;
 
-    BitmapDrawable bmD; //BMD de référence
-    Bitmap bmRef; //BM de référence, permet de sauvegarder toutes les modifs que l'on fait uniquement sur
-                  //les Bitmaps qui sont affichés à l'ecran
+    //Valeurs de référence : on applique pas les modifs directement sur les images,
+    //on change dabord les valeurs de référence puis on applique les changements de ces valeurs
+    //sur les images à l'écran (toutes les images n'ont pas la meme taille en fonction de si
+    // on les voit à l'écran ou pas).
+    int refWidth; //largeur de référence
+    int refHeight; //hauteur de référence
 
     int minLine;//Premiere ligne de BM aue l'on voit a l'écran
     int maxLine;//Derniere ligne de BM aue l'on voit a l'écran
@@ -53,13 +56,9 @@ public class TouchExample extends View {
         mGestureDetector = new GestureDetector(context, new ZoomGesture());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
 
-
-        bmD = (BitmapDrawable) getContext().getResources().getDrawable(R.drawable.dog1);
-        bmRef = bmD.getBitmap(); //Initialisation du Bitmap de référence
-
         //Obtention des images depuis la mémoire
         bmDrawList = imagesGetter.getBitmaps("/storage/emulated/0/DCIM/Camera");
-        for(int i = 0; i < bmDrawList.size(); i++) bmList.add(bmD.getBitmap());
+        for(int i = 0; i < bmDrawList.size(); i++) bmList.add(bmDrawList.get(i).getBitmap());
 
         //Obtention dynamique de la largeur de l'écran (pour supporter l'inclinaison de l'écran)
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -68,6 +67,9 @@ public class TouchExample extends View {
                 .getMetrics(displayMetrics);
         displayWidth = displayMetrics.widthPixels;
         maxHeight =(int) (displayWidth * aspectRatio);
+
+        refWidth = displayWidth;
+        refHeight = maxHeight;
 
         init();
     }
@@ -79,9 +81,9 @@ public class TouchExample extends View {
         int top;
         int left;
 
-        int nImageLine = displayWidth/bmRef.getWidth(); //Actuel nombre d'images par ligne
-        int tmpTop = bmRef.getHeight(); //Hauteur du BM de reference
-        int tmpLeft = bmRef.getWidth(); //Largeur du BM de reference
+        int nImageLine = displayWidth/refWidth; //Actuel nombre d'images par ligne
+        int tmpTop = refHeight; //Hauteur du BM de reference
+        int tmpLeft = refWidth; //Largeur du BM de reference
 
         //Determine la limite du scroll
         if (tmpTop * (bmList.size()/nImageLine) > displayHeight) //Est-ce-que images ne rentrent pas toutes a l'écran ?
@@ -112,7 +114,7 @@ public class TouchExample extends View {
             top = tmpTop * (i/nImageLine);
             left = tmpLeft * (i%nImageLine);
             bmList.set(i, bmDrawList.get(i).getBitmap());
-            bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), bmRef.getWidth(), bmRef.getHeight(), false));
+            bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i),refWidth, refHeight, false));
             canvas.drawBitmap(bmList.get(i), left, top + scrollOffset, mPaint);
         }
     }
@@ -144,41 +146,39 @@ public class TouchExample extends View {
             mScale = (mScale > 1) ? 1 : mScale;
             mScale = (mScale < 1./9) ? (float) 1/9 : mScale;
 
-            process_image(bmRef,mScale); //On applique les transfos sur bmRef
+            setRef(mScale); //On applique les transfos sur les valeurs de reference
 
-            //On applique les changements de bmRef sur toutes les images à afficher
+            //On applique les changements des valeurs de reference sur toutes les images à afficher
             for (int i = min; i < max; i++)
             {
-                bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), bmRef.getWidth(), bmRef.getHeight(), false));
+                bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), refWidth, refHeight, false));
             }
             invalidate();
             return true;
         }
     }
 
-    //Redimensionne bmRef en fonction du coefficient de zoom
-    void process_image(Bitmap image, float imageScale) {
-        Bitmap bm = Bitmap.createScaledBitmap(image, displayWidth, maxHeight, false);
-
+    //Change les valeurs de reference en fonction du coefficient de zoom
+    void setRef(float imageScale) {
         //Zoom et déZoom par acoups
         for (int i = 0; i< maxIm; i++)
         {
             if(i/(float)maxIm < imageScale && imageScale < (i+1)/(float)maxIm)
             {
-                bm = Bitmap.createScaledBitmap(image, (displayWidth/(maxIm-i)), (maxHeight/(maxIm-i)), false);
+                refWidth = displayWidth/(maxIm-i);
+                refHeight = maxHeight/(maxIm-i);
             }
         }
-        bmRef = bm;
     }
 
     //Initialisation à la construction, car c'est la fonction de déZoom qui gére le rescale des images
     void init()
     {
         mScale = 1;
-        process_image(bmRef,mScale); //TO CHECK
+        setRef(mScale); //TO CHECK
         for (int i = min; i < max; i++)
         {
-            bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), bmRef.getWidth(), bmRef.getHeight(), false));
+            bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), refWidth, refHeight, false));
         }
         invalidate();
         return;
