@@ -18,33 +18,33 @@ import java.util.ArrayList;
 
 public class TouchExample extends View {
     private static final String TAG = "TouchExample";
+    private final String IMAGES_FOLDER = "/storage/emulated/0/DCIM/Camera";
+    private final float ASPECT_RATIO =(float) 9/16;
+    private final int MAX_NUM_OF_IMAGE_PER_LINE = 7; //Nombre mMaxImageIndex d'images par ligne
     private float mScale = 1f;
     private GestureDetector mGestureDetector;
-    private ScaleGestureDetector mScaleGestureDetector;;
+    private ScaleGestureDetector mScaleGestureDetector;
 
     //Valeurs de référence : on applique pas les modifs directement sur les images,
     //on change dabord les valeurs de référence puis on applique les changements de ces valeurs
     //sur les images à l'écran (toutes les images n'ont pas la meme taille en fonction de si
     // on les voit à l'écran ou pas).
-    int refWidth; //largeur de référence
-    int refHeight; //hauteur de référence
+    int mRefWidth;                           //largeur de référence
+    int mRefHeight;                          //hauteur de référence
 
-    int minLine;//Premiere ligne de BM aue l'on voit a l'écran
-    int maxLine;//Derniere ligne de BM aue l'on voit a l'écran
-    int min;//Indice min de l'image à afficher, prend en compte le scroll et le dépassement
-    int max;//Indice max de l'image à afficher, prend en compte le scroll et le dépassement
+    int mFirstLineIndex;                    //Premiere ligne de BM que l'on voit a l'écran
+    int mLastLineIndex;                     //Derniere ligne de BM que l'on voit a l'écran
+    int mMinImageIndex;                     //Indice mMinImageIndex de l'image à afficher, prend en compte le scroll et le dépassement
+    int mMaxImageIndex;                     //Indice mMaxImageIndex de l'image à afficher, prend en compte le scroll et le dépassement
 
-    int maxHeight; //Hauteur maximale d'une image a l'écran
-    int displayWidth; //Largeur de l'ecran
-    float aspectRatio =(float) 9/16;
-    int displayHeight = 1700; //Hauteur de l'écran
+    int mMaxImageHeight;                    //Hauteur maximale d'une image a l'écran
+    int mScreenWidth;                       //Largeur de l'ecran
+    int mScreenHeight;                      //Hauteur de l'écran
 
-    int maxIm = 7; //Nombre max d'images par ligne
+    ArrayList<BitmapDrawable> bmDrawList;           //Contient tous les BMD que l'on veut afficher
+    ArrayList<Bitmap> bmList = new ArrayList<>();   //Contient tous les BM que l'on veut afficher
 
-    ArrayList<BitmapDrawable> bmDrawList; //Contient tous les BMD que l'on veut afficher
-    ArrayList<Bitmap> bmList = new ArrayList<>(); //Contient tous les BM que l'on veut afficher
-
-    int scrollOffset = 0; //Coefficient de décalage du au scroll
+    int mScrollOffset = 0;       //Coefficient de décalage du au scroll
 
     private Paint mPaint;
 
@@ -57,7 +57,7 @@ public class TouchExample extends View {
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
 
         //Obtention des images depuis la mémoire
-        bmDrawList = imagesGetter.getBitmaps("/storage/emulated/0/DCIM/Camera");
+        bmDrawList = imagesGetter.getBitmaps(IMAGES_FOLDER);
         for(int i = 0; i < bmDrawList.size(); i++) bmList.add(bmDrawList.get(i).getBitmap());
 
         //Obtention dynamique de la largeur de l'écran (pour supporter l'inclinaison de l'écran)
@@ -65,11 +65,11 @@ public class TouchExample extends View {
         ((Activity) getContext()).getWindowManager()
                 .getDefaultDisplay()
                 .getMetrics(displayMetrics);
-        displayWidth = displayMetrics.widthPixels;
-        maxHeight =(int) (displayWidth * aspectRatio);
+        mScreenWidth = displayMetrics.widthPixels;
+        mMaxImageHeight =(int) (mScreenWidth * ASPECT_RATIO);
 
-        refWidth = displayWidth;
-        refHeight = maxHeight;
+        mRefWidth = mScreenWidth;
+        mRefHeight = mMaxImageHeight;
 
         init();
     }
@@ -81,41 +81,40 @@ public class TouchExample extends View {
         int top;
         int left;
 
-        int nImageLine = displayWidth/refWidth; //Actuel nombre d'images par ligne
-        int tmpTop = refHeight; //Hauteur du BM de reference
-        int tmpLeft = refWidth; //Largeur du BM de reference
+        int nImageLine = mScreenWidth / mRefWidth; //Actuel nombre d'images par ligne
+        int tmpTop = mRefHeight; //Hauteur du BM de reference
+        int tmpLeft = mRefWidth; //Largeur du BM de reference
 
         //Determine la limite du scroll
-        if (tmpTop * (bmList.size()/nImageLine) > displayHeight) //Est-ce-que images ne rentrent pas toutes a l'écran ?
+        if (tmpTop * (bmList.size()/nImageLine) > mScreenHeight) //Est-ce-que images ne rentrent pas toutes a l'écran ?
         {
-            int lastLine = -displayHeight + tmpTop * (bmList.size()/nImageLine + 1) - (displayHeight/tmpTop); //Position en Y de la derniere ligne d'iamge de la gallery
-            if(scrollOffset > 0) //Empeche de scroll trop haut
-                scrollOffset = 0;
-            if(scrollOffset < -lastLine) //Empeche de scroll trop bas
-                scrollOffset = -lastLine;
-            minLine = -scrollOffset/tmpTop - 1;
-            maxLine = minLine + displayHeight/tmpTop + 4;
+            int lastLine = -mScreenHeight + tmpTop * (bmList.size()/nImageLine + 1) - (mScreenHeight /tmpTop); //Position en Y de la derniere ligne d'iamge de la gallery
+            if(mScrollOffset > 0) //Empeche de scroll trop haut
+                mScrollOffset = 0;
+            if(mScrollOffset < -lastLine) //Empeche de scroll trop bas
+                mScrollOffset = -lastLine;
+            mFirstLineIndex = -mScrollOffset /tmpTop - 1;
+            mLastLineIndex = mFirstLineIndex + mScreenHeight /tmpTop + 4;
         }
         else //Désactivation du scroll
         {
-            minLine = 0;
-            maxLine = bmList.size()/nImageLine + bmList.size()%nImageLine;
-            scrollOffset = 0;
+            mFirstLineIndex = 0;
+            mLastLineIndex = bmList.size()/nImageLine + bmList.size()%nImageLine;
+            mScrollOffset = 0;
         }
 
-        max = (maxLine * nImageLine) + (bmList.size() % nImageLine);
-        min = (minLine-1) * nImageLine;
-        if (max > bmList.size()) max = bmList.size();
-        if(min < 0) min = 0;
+        mMaxImageIndex = (mLastLineIndex * nImageLine) + (bmList.size() % nImageLine);
+        mMinImageIndex = (mFirstLineIndex -1) * nImageLine;
+        if (mMaxImageIndex > bmList.size()) mMaxImageIndex = bmList.size();
+        if(mMinImageIndex < 0) mMinImageIndex = 0;
 
         //Affichage des images que l'on peut voir a l'écran(plus une ligne en bas et en haut)
-        for (int i = min; i < max; i++)
+        for (int i = mMinImageIndex; i < mMaxImageIndex; i++)
         {
             top = tmpTop * (i/nImageLine);
             left = tmpLeft * (i%nImageLine);
-            bmList.set(i, bmDrawList.get(i).getBitmap());
-            bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i),refWidth, refHeight, false));
-            canvas.drawBitmap(bmList.get(i), left, top + scrollOffset, mPaint);
+            bmList.set(i,Bitmap.createScaledBitmap(bmDrawList.get(i).getBitmap(), mRefWidth, mRefHeight, false));
+            canvas.drawBitmap(bmList.get(i), left, top + mScrollOffset, mPaint);
         }
     }
 
@@ -132,7 +131,7 @@ public class TouchExample extends View {
         //Prise en compte du scroll
         @Override
         public boolean onScroll(MotionEvent event1, MotionEvent event2, float distanceX,float distanceY) {
-            scrollOffset -= distanceY;
+            mScrollOffset -= distanceY;
             invalidate();
             return true;
         }
@@ -149,9 +148,9 @@ public class TouchExample extends View {
             setRef(mScale); //On applique les transfos sur les valeurs de reference
 
             //On applique les changements des valeurs de reference sur toutes les images à afficher
-            for (int i = min; i < max; i++)
+            for (int i = mMinImageIndex; i < mMaxImageIndex; i++)
             {
-                bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), refWidth, refHeight, false));
+                bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), mRefWidth, mRefHeight, false));
             }
             invalidate();
             return true;
@@ -161,12 +160,12 @@ public class TouchExample extends View {
     //Change les valeurs de reference en fonction du coefficient de zoom
     void setRef(float imageScale) {
         //Zoom et déZoom par acoups
-        for (int i = 0; i< maxIm; i++)
+        for (int i = 0; i< MAX_NUM_OF_IMAGE_PER_LINE; i++)
         {
-            if(i/(float)maxIm < imageScale && imageScale < (i+1)/(float)maxIm)
+            if(i/(float) MAX_NUM_OF_IMAGE_PER_LINE < imageScale && imageScale < (i+1)/(float) MAX_NUM_OF_IMAGE_PER_LINE)
             {
-                refWidth = displayWidth/(maxIm-i);
-                refHeight = maxHeight/(maxIm-i);
+                mRefWidth = mScreenWidth /(MAX_NUM_OF_IMAGE_PER_LINE -i);
+                mRefHeight = mMaxImageHeight /(MAX_NUM_OF_IMAGE_PER_LINE -i);
             }
         }
     }
@@ -176,12 +175,11 @@ public class TouchExample extends View {
     {
         mScale = 1;
         setRef(mScale); //TO CHECK
-        for (int i = min; i < max; i++)
+        for (int i = mMinImageIndex; i < mMaxImageIndex; i++)
         {
-            bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), refWidth, refHeight, false));
+            bmList.set(i,Bitmap.createScaledBitmap(bmList.get(i), mRefWidth, mRefHeight, false));
         }
         invalidate();
-        return;
     }
 
 }
