@@ -66,6 +66,7 @@ public class TouchExample extends View {
                 .getDefaultDisplay()
                 .getMetrics(displayMetrics);
         mScreenWidth = displayMetrics.widthPixels;
+        mScreenHeight = displayMetrics.heightPixels;
         mMaxImageHeight =(int) (mScreenWidth * ASPECT_RATIO);
 
         mRefWidth = mScreenWidth;
